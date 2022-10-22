@@ -1,0 +1,474 @@
+import React from "react";
+import {withStyles} from "@material-ui/core";
+
+import Lottie from "../components/Lottie";
+import { t } from "../utils/t";
+
+import {AppBar, Toolbar, Divider, SwipeableDrawer, ListItemIcon, ListItemText, IconButton, MenuItem, Menu, Tooltip} from "@material-ui/core";
+
+import MenuIcon from "@material-ui/icons/Menu";
+import AccountCircleIcon from "@material-ui/icons/AccountCircle";
+import SettingsIcon from "@material-ui/icons/Settings";
+import SecurityIcon from "@material-ui/icons/Security";
+
+import api  from "../utils/api";
+import { HISTORY } from "../utils/constants";
+import InnerToolbar from "../components/InnerToolbar";
+import DrawerContent from "../components/DrawerContent";
+import actions from "../actions/utils";
+
+import JamyAngry from "../icons/JamyAngry";
+import JamyAnnoyed from "../icons/JamyAnnoyed";
+import JamyFlirty from "../icons/JamyFlirty";
+import JamyHappy from "../icons/JamyHappy";
+import JamySad from "../icons/JamySad";
+import JamyShocked from "../icons/JamyShocked";
+import JamySuspicious from "../icons/JamySuspicious";
+
+const styles = theme => ({
+    appBar: {
+        zIndex: theme.zIndex.drawer + 1,
+        contain: "layout paint style",
+        transform: "translateZ(0px)",
+    },
+    swipeableDrawer: {
+        width: 256,
+        flexShrink: 0,
+        [theme.breakpoints.up("md")]: {
+            display: "none"
+        }
+    },
+    drawerPaper: {
+        backgroundColor: theme.palette.secondary.dark,
+        color: theme.palette.secondary.contrastText,
+        width: 256,
+        backgroundSize: "calc(100% + 96px)",
+        contain: "layout paint size style",
+    },
+    drawerButton: {
+        marginRight: theme.spacing(1),
+        [theme.breakpoints.up("md")]: {
+            display: "none"
+        }
+    },
+    accountButton: {
+        marginLeft: theme.spacing(1),
+    },
+    accountButtonHidden: {
+        marginLeft: theme.spacing(1),
+        opacity: 0
+    },
+    drawerToolbarSpacer: {
+        minWidth: 256 - theme.spacing(2+2),
+        height: 64,
+        lineHeight: "64px",
+        [theme.breakpoints.down("sm")]: {
+            display: "none"
+        },
+        marginRight: theme.spacing(1),
+        cursor: "pointer",
+        overflow: "hidden",
+    },
+    swipeableDrawerToolbar: {
+        height: 64,
+        lineHeight: "64px",
+        marginRight: theme.spacing(1),
+        cursor: "pointer"
+    },
+    appLogo: {
+        verticalAlign: "middle",
+        marginRight: theme.spacing(1)
+    },
+    appTitle: {
+        verticalAlign: "middle",
+        fontWeight: "bold",
+        fontFamily: `"Jura"`,
+        userSelect: "none",
+    },
+    swipeableDrawerAppTitle: {
+        verticalAlign: "middle",
+        fontWeight: "bold",
+        fontFamily: `"Jura"`,
+        userSelect: "none",
+    },
+    jamyContainer: {
+        display: "initial",
+        height: "calc(100% - 36px)",
+        width: "auto",
+    },
+    jamy: {
+        height: "calc(100% - 36px)",
+        width: "auto",
+        marginRight: theme.spacing(1),
+        verticalAlign: "middle",
+        animationFillMode: "both",
+        animation: "$jamy",
+        animationDuration: "24s",
+        animationIterationCount: "infinite",
+        "@global": {
+            "@keyframes jamy": {
+                "0%": {
+                    transform: "translateY(0px)",
+                },
+                "48%": {
+                    transform: "translateY(0px)",
+                },
+                "49%": {
+                    transform: "translateY(-50px)",
+                },
+                "50%": {
+                    transform: "translateY(-99999999999999999999999px)",
+                },
+                "51%": {
+                    transform: "translateY(50px)",
+                },
+                "52%": {
+                    transform: "translateY(0px)",
+                },
+                "100%": {
+                    transform: "translateY(0px)",
+                },
+            }
+        }
+    },
+    logo: {
+        height: "calc(100% - 18px)",
+        marginRight: theme.spacing(1),
+        verticalAlign: "middle",
+    },
+    drawerPrivacyHint: {
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        padding: 8,
+        color: "#fff",
+        userSelect: "none",
+        transition: "opacity cubic-bezier(0.4, 0, 0.2, 1) 700ms",
+        opacity: .777,
+        "& > p": {
+            opacity: 0,
+            transition: "opacity cubic-bezier(0.4, 0, 0.2, 1) 1750ms",
+            fontWeight: "bold",
+            paddingBottom: 12,
+        }
+    },
+    drawerPrivacyHintHidden: {
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        padding: 8,
+        color: "#fff",
+        userSelect: "none",
+        transition: "opacity cubic-bezier(0.4, 0, 0.2, 1) 700ms",
+        opacity: 0,
+        "& > p": {
+            opacity: 0,
+            transition: "opacity cubic-bezier(0.4, 0, 0.2, 1) 1750ms",
+        }
+    },
+    donateButton: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        "&:hover, &": {
+            backgroundColor: "#fabd28",
+            color: "#0725b1",
+            fontWeight: "bold",
+        },
+        margin: "0px 32px 64px 32px",
+        width: "calc(100% - 64px)"
+    }
+});
+
+class AppToolbar extends React.PureComponent {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            classes: props.classes,
+            pathname: props.pathname,
+            language: props.language,
+            camo: props.camo,
+            ret: props.ret,
+            logged_account: props.logged_account,
+            loaded_progress_percent: props.loaded_progress_percent,
+            know_the_settings: props.know_the_settings,
+            jamy_state_of_mind: props.jamy_state_of_mind,
+            jamy_enabled: props.jamy_enabled,
+            music_enabled: props.music_enabled,
+            _history: HISTORY,
+            _swipeable_app_drawer_open: false,
+            _account_menu_anchor_element: null,
+            _look_much_jamy: false,
+            _look_very_much_jamy: false,
+            _jamy_mouse_hover: false,
+            _jamy_mouse_hover_click: 0,
+            _click_much_jamy: false,
+            _is_pre_reset: false,
+            _explosion: null
+        };
+    };
+
+    componentDidMount() {
+
+        this.setState({
+            _explosion: <Lottie
+                onClick={this._exit_to_app}
+                id={"explosion"}
+                loop={true}
+                autoplay={true}
+                src="/src/js/notoemoji/lottie/1f4a5.json"
+                style={{ height: '150px', width: '150px', cursor: "pointer" }}/>
+        })
+    }
+
+    componentWillReceiveProps(new_props) {
+
+        const update = Boolean(
+            new_props.pathname !== this.state.pathname ||
+            new_props.language !== this.state.language ||
+            new_props.know_the_settings !== this.state.know_the_settings ||
+            new_props.jamy_state_of_mind !== this.state.jamy_state_of_mind ||
+            new_props.jamy_enabled !== this.state.jamy_enabled ||
+            new_props.music_enabled !== this.state.music_enabled
+        );
+
+        this.setState(new_props, () => {
+
+            if(update) {
+
+                this.forceUpdate();
+            }
+        });
+    }
+
+    _handle_open_swipeable_app_drawer = () => {
+
+        this.setState({_swipeable_app_drawer_open: true}, ( ) => {
+
+            this.forceUpdate();
+        });
+        actions.trigger_sfx("navigation_transition-left");
+    };
+
+    _handle_close_swipeable_app_drawer = () => {
+
+        this.setState({_swipeable_app_drawer_open: false}, ( ) => {
+
+            this.forceUpdate();
+        });
+        actions.trigger_sfx("navigation_transition-left");
+    };
+
+    _open_account_menu = (event) => {
+
+        this.setState({_account_menu_anchor_element: event.currentTarget}, ( ) => {
+
+            this.forceUpdate();
+        });
+    };
+
+    _close_account_menu = () => {
+
+        this.setState({_account_menu_anchor_element: null, _is_pre_reset: false}, ( ) => {
+
+            this.forceUpdate();
+        });
+    };
+
+    _open_home = () => {
+
+        const { _history } = this.state;
+        _history.push("/");
+    };
+
+    _open_settings = () => {
+
+        window.dispatchEvent(new Event("menu-action-settings"));
+        const { _history } = this.state;
+        _history.push("/settings");
+    };
+
+    _exit_to_app = () => {
+
+        api.reset_all_databases(function(){
+
+            window.location.reload();
+        });
+    };
+
+    _handle_jamy_mouse_enter = () => {
+
+        this.setState({_jamy_mouse_hover: true, _jamy_mouse_hover_click: 0, _look_much_jamy: false, _look_very_much_jamy: false, _click_much_jamy: false}, () => {
+
+            setTimeout(() => {
+
+                this._show_look_much_jamy();
+
+            }, 8000);
+        });
+    };
+
+    _handle_jamy_mouse_leave = () => {
+
+        this.setState({_jamy_mouse_hover: false, _jamy_mouse_hover_click: 0, _look_much_jamy: false, _look_very_much_jamy: false, _click_much_jamy: false });
+    };
+
+    _show_look_much_jamy = () => {
+
+        if(this.state._jamy_mouse_hover) {
+
+            this.setState({_look_much_jamy: true}, () => {
+
+                actions.jamy_update("suspicious", 7000);
+                actions.trigger_snackbar(t( "sentences.the longer you look the shiner i get"));
+                setTimeout(() => {
+
+                    if(this.state._jamy_mouse_hover) {
+
+                        this.setState({_look_very_much_jamy: true}, () => {
+
+                            actions.jamy_update("happy", 4000);
+                            actions.trigger_snackbar(t( "sentences.take a picture it last longer"));
+                        });
+                    }
+                }, 7100)
+            });
+        }
+    };
+
+    _show_click_much_jamy = () => {
+
+        if(this.state._jamy_mouse_hover) {
+
+            this.setState({_click_much_jamy: true}, () => {
+
+                actions.jamy_update("angry", 6000);
+                actions.trigger_snackbar(t( "sentences.stop bitchslapping me"));
+                setTimeout(() => {
+
+                    this.setState({_click_much_jamy: false});
+                }, 6000);
+            });
+        }
+    };
+
+    _handle_jamy_mouse_click = () => {
+
+        const click = this.state._jamy_mouse_hover_click + 1;
+        this.setState({_jamy_mouse_hover_click: click});
+
+        if(click >= 16 && this.state._jamy_mouse_hover) {
+
+            this._show_click_much_jamy();
+        }
+    };
+
+    _pre_reset_toggle = () => {
+
+        this.setState({_is_pre_reset: !this.state._is_pre_reset}, () => {
+
+            this.forceUpdate();
+        });
+    };
+
+    render() {
+
+        const { classes, ret, camo, _is_pre_reset, pathname, language, loaded_progress_percent, know_the_settings, _swipeable_app_drawer_open, _account_menu_anchor_element, logged_account, jamy_state_of_mind, jamy_enabled, music_enabled, _explosion } = this.state;
+
+        const JAMY = {
+            angry: <JamyAngry className={classes.jamy} />,
+            annoyed: <JamyAnnoyed className={classes.jamy} />,
+            flirty: <JamyFlirty className={classes.jamy} />,
+            happy: <JamyHappy className={classes.jamy} />,
+            sad: <JamySad className={classes.jamy} />,
+            shocked: <JamyShocked className={classes.jamy} />,
+            suspicious: <JamySuspicious className={classes.jamy} />,
+        }
+
+        return (
+            <div>
+                <SwipeableDrawer
+                    keepMounted={true}
+                    transitionDuration={{enter: 125, exit: 75}}
+                    anchor="left"
+                    classes={{root: classes.swipeableDrawer, paper: classes.drawerPaper}}
+                    open={_swipeable_app_drawer_open}
+                    onOpen={this._handle_open_swipeable_app_drawer}
+                    onClose={this._handle_close_swipeable_app_drawer}>
+                        <Toolbar className={classes.appBar}>
+                            <div className={classes.swipeableDrawerToolbar} onClick={this._open_home}>
+                                <span className={classes.swipeableDrawerAppTitle}>HTTPS://PIXA.PICS/</span>
+                            </div>
+                        </Toolbar>
+                        <DrawerContent logged_account={logged_account} language={language} onClose={this._handle_close_swipeable_app_drawer}/>
+                    <div className={_swipeable_app_drawer_open ? classes.drawerPrivacyHint: classes.drawerPrivacyHintHidden}>
+                        <p style={{fontSize: "0.777em"}}>Cutting off annoying details is free while on the journey! Easily becoming a lighter adventure, using a sanitized online-self's image tends to honor one's real beauty stronger.<br/><br/>THIS APP: Is in your hands only, doesn't sniff network requests, and is neutral just like Switzerland.</p>
+                        <h4 style={{color: "#ffffffff", marginBottom: 0}}>Online-self image matters! This isn't madness; This is Pixaaaaa! ... Pics</h4>
+                    </div>
+                </SwipeableDrawer>
+                <AppBar position="fixed" className={classes.appBar}>
+                    <Toolbar>
+                        <IconButton edge="start" className={classes.drawerButton} color="inherit" aria-label="menu" onClick={this._handle_open_swipeable_app_drawer}>
+                            <MenuIcon />
+                        </IconButton>
+                        <div className={classes.drawerToolbarSpacer} onClick={this._open_home}>
+                            {
+                                know_the_settings ?
+                                    jamy_enabled ?
+                                        <div className={classes.jamyContainer}
+                                            onMouseEnter={this._handle_jamy_mouse_enter}
+                                            onMouseLeave={this._handle_jamy_mouse_leave}
+                                            onClick={this._handle_jamy_mouse_click}>
+                                            <Tooltip
+                                                title={t( "sentences.hey i am jamy")}>
+                                                <div className={classes.jamyContainer}>
+                                                    {JAMY[jamy_state_of_mind]}
+                                                </div>
+                                            </Tooltip>
+                                        </div>:
+                                        <img src={"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAXCAMAAABUMB2pAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAABRUExURUdwTM8gNGYm6NaEj+///IEMPZe2wwAAALELMsnk6OuhpA/ghUoGKbLt7/dRTgRMpCoBgwahkvPDxN3193CGk/rX1RYCK6HP3AjQ4rz/yZCgsNNpsAgAAAABdFJOUwBA5thmAAABFElEQVQoz4WTi26DMAxF40DsOGl4tmu7///Q2XltqoBdQZDg6PraMsZ0kcpcSb6D6oIjwn3jiRXzJxjh+BizBu/BAx0zosem5waKHVC0j7+Sku6Aohi5IdPILPX8ZzBa3u+5QZtAkktVsNot2TWu3YpFPnt5rUneO30sbG2cOwMs7wGql0JC0WK+1jhr9p0DZycxci5jSt4KJE5cFQJoJpcvudXGNCfuFE+ayDn10lKlOWNihQIHAEY1aKqTIGvtit2JcVBEWpfzdmvQYlfboTBNQ2nbkCB9pPR6IRYqfCP6yugg/4zcWsSCoTLQoI9tSiljmEudLBTd0xNxEKqEPtvMe0pDeuam6WrHteX/fgVz/rP8ADUeDr4tHJI9AAAAAElFTkSuQmCC"} className={"pixelated " + classes.logo} />
+                                    : null
+                            }
+                            <span className={classes.appTitle}>PIXA.PICS</span>
+                        </div>
+                        <InnerToolbar ret={ret} camo={camo} know_if_logged={true} music_enabled={music_enabled} logged_account={logged_account} pathname={pathname} loaded_progress_percent={loaded_progress_percent}/>
+                        <IconButton className={classes.accountButton}
+                                    edge="end"
+                                    aria-haspopup="true"
+                                    color="inherit"
+                                    onClick={this._open_account_menu}>
+                            <AccountCircleIcon/>
+                        </IconButton>
+                        <Menu anchorEl={_account_menu_anchor_element}
+                            anchorOrigin={{ vertical: "top", horizontal: "right"}}
+                            keepMounted
+                            transformOrigin={{ vertical: "top", horizontal: "right",}}
+                            open={Boolean(_account_menu_anchor_element)}
+                            onClose={this._close_account_menu} >
+                            <MenuItem onClick={this._open_settings}>
+                                <ListItemIcon>
+                                    <SettingsIcon fontSize="small" />
+                                </ListItemIcon>
+                                <ListItemText primary={t( "words.settings", {FLC: true})}/>
+                            </MenuItem>
+                            <div>
+                                <Divider />
+                                {_is_pre_reset ? _explosion: null}
+                                {_is_pre_reset ? <Divider />: null}
+                                <MenuItem onClick={this._pre_reset_toggle}>
+                                    <ListItemIcon>
+                                        <SecurityIcon fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText primary={_is_pre_reset ?  t( "words.cancel", {TUC: true}): t( "words.reset", {TUC: true})}/>
+                                </MenuItem>
+                            </div>
+                        </Menu>
+                    </Toolbar>
+                </AppBar>
+            </div>
+        );
+    }
+}
+
+export default withStyles(styles)(AppToolbar);

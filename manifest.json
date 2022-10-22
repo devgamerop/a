@@ -1,0 +1,99 @@
+{
+  "manifest_version": 2,
+  "version": "1.0.3.0",
+  "author": "Affolter Matias",
+  "name": "PIXA PICS",
+  "start_url": "/",
+  "scope": "/",
+  "serviceworker": {
+    "src": "/service-worker.js",
+    "scope": "/"
+  },
+  "short_name": "PIXA PICS",
+  "description": "Pixel-Art/NFTs LAB. Make potential possible while (un)limited.",
+  "display": "fullscreen",
+  "theme_color": "#060f23",
+  "background_color": "#ffffff",
+  "browser_action": {
+    "default_icon": "/src/images/logo-transparent.png",
+    "default_popup": "index.html"
+  },
+  "icons": [
+    {
+      "src": "/src/images/manifest/logo-white.png",
+      "sizes": "1536x1536",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pixa.Pics",
+      "short_name": "Pixa.Pics",
+      "description": "Pixel art editor. Make NFTs potential (un)limited.",
+      "url": "/",
+      "icons": [{ "src": "/src/images/logo-transparent.png", "sizes": "1536x1536", "type": "image/png" }]
+    }
+  ],
+  "related_applications": [{
+    "platform": "play",
+    "url": "https://play.google.com/store/apps/details?id=pics.pixa.twa"
+  }],
+  "screenshots" : [
+    {
+      "src": "/src/images/screenshots/pixa.pics_1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "View 1 - editor"
+    },
+    {
+      "src": "/src/images/screenshots/pixa.pics_2.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "View 2 - editor"
+    },
+    {
+      "src": "/src/images/screenshots/pixa.pics_3.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "View 3 - editor"
+    },
+    {
+      "src": "/src/images/screenshots/pixa.pics_4.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "View 4 - editor"
+    },
+    {
+      "src": "/src/images/screenshots/pixa.pics_5.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "View 5 - editor"
+    },
+    {
+      "src": "/src/images/screenshots/pixa.pics_6.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "View 6 - editor"
+    },
+    {
+      "src": "/src/images/screenshots/pixa.pics_7.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "View 7 - editor"
+    },
+    {
+      "src": "/src/images/screenshots/pixa.pics_8.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "View 8 - editor"
+    }
+  ]
+}
